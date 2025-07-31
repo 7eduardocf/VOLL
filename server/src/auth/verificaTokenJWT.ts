@@ -1,32 +1,51 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import jwt from 'jsonwebtoken'
+import { Request, Response, NextFunction, RequestHandler } from 'express'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import { type Role } from './roles'
 import { AppError, Status } from '../error/ErrorHandler.js'
 
-export function verificaTokenJWT (...role: Role[]) {
-  return (req, res, next): any => {
-    if (!req.headers.authorization) { throw new AppError('Nenhum token informado.', Status.BAD_REQUEST) }
+declare module 'express' {
+  interface Request {
+    userId?: string
+  }
+}
+
+function isJwtPayload(decoded: string | JwtPayload | undefined): decoded is JwtPayload {
+  return typeof decoded !== 'string' && decoded !== undefined
+}
+
+export function verificaTokenJWT(...roles: Role[]): RequestHandler {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.headers.authorization) {
+      throw new AppError('Nenhum token informado.', Status.BAD_REQUEST)
+    }
 
     const tokenString: string[] = req.headers.authorization.split(' ')
     const token = tokenString[1]
 
-    // Nenhuma token informado
     if (!token) {
-      return res
-        .status(403)
-        .json({ auth: false, message: 'Nenhum token informado.' })
+      res.status(403).json({ auth: false, message: 'Nenhum token informado.' })
+      return
     }
 
-    // Verifica se o token é válido
-    jwt.verify(token, process.env.SECRET, function (err, decoded) {
+    const secret = process.env.SECRET
+    if (!secret) {
+      throw new AppError('Variável de ambiente SECRET não definida.', Status.INTERNAL_SERVER_ERROR)
+    }
+
+    jwt.verify(token, secret, (err, decoded) => {
       if (err) {
-        return res
-          .status(403)
-          .json({ auth: false, message: 'Falha ao autenticar o token.' })
+        res.status(403).json({ auth: false, message: 'Falha ao autenticar o token.' })
+        return
       }
 
-      if (role.length > 0 && !role.includes(decoded.role)) {
-        return res.status(403).json({ auth: false, message: 'Não autorizado' })
+      if (!isJwtPayload(decoded)) {
+        res.status(403).json({ auth: false, message: 'Token inválido.' })
+        return
+      }
+
+      if (roles.length > 0 && !roles.includes(decoded.role as Role)) {
+        res.status(403).json({ auth: false, message: 'Não autorizado' })
+        return
       }
 
       req.userId = decoded.id

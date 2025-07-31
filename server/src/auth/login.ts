@@ -16,24 +16,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
   if (autenticavel == null) {
     throw new AppError('Não encontrado!', 404)
-  } else {
-    const { id, rota, role, senha: senhaAuth } = autenticavel
-    const senhaCorrespondente = decryptPassword(senhaAuth)
-
-    if (senha !== senhaCorrespondente) {
-      throw new AppError('Senha incorreta!', 401)
-    }
-
-    const token = jwt.sign({ id, role }, process.env.SECRET, {
-      expiresIn: 86400
-    }) // expira em 24 horas
-
-    res.status(200).json({
-      auth: true,
-      token,
-      rota
-    })
   }
+
+  const { id, rota, role, senha: senhaAuth } = autenticavel
+  const senhaCorrespondente = decryptPassword(senhaAuth)
+
+  if (senha !== senhaCorrespondente) {
+    throw new AppError('Senha incorreta!', 401)
+  }
+
+  const secret = process.env.SECRET
+  if (!secret) {
+    throw new AppError('Variável de ambiente SECRET não definida.', 500)
+  }
+
+  const token = jwt.sign({ id, role }, secret, {
+    expiresIn: 86400 // 24h
+  })
+
+  res.status(200).json({
+    auth: true,
+    token,
+    rota
+  })
 }
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
