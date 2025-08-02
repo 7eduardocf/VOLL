@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import banner from './banner.png'
+import banner from '../../../assets/banner.png'
 
 
 const Banner = styled.section`
