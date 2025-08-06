@@ -8,6 +8,7 @@ function Login() {
     return (
         <>
             <CampoDigitacao 
+                label="Email"
                 valor={email}
                 tipo="text"
                 placeholder="Insira seu endereço de e-mail"
