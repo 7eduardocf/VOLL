@@ -12,7 +12,7 @@ const LinkA = styled.a`
     color: #0B3B60;
 `
 
-const ImagemContainer = styled.div`
+export const ImagemContainer = styled.div`
     margin: 3em 0;
 `
 
