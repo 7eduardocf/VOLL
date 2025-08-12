@@ -1,10 +1,16 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import CampoDigitacao from "../../components/CampoDigitacao"
 import FormularioLogin from "../../components/FormularioLogin"
 import TituloLogin from "./Titulo"
 import styled from "styled-components"
 import imagem from "./Logo.png"
 import BotaoLogin from "./Button"
+import usePost from "../../usePost"
+
+interface ILogin {
+    email: string,
+    senha: string
+}
 
 const LinkA = styled.a`
     underline: none;
@@ -20,13 +26,31 @@ function Login() {
 
     const [email, setEmail] = useState("")
     const [senha, setSenha] = useState("")
+    const { cadastrarDados, erro, sucesso } = usePost()
+
+    const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+
+        const usuario: ILogin = {
+            email: email,
+            senha: senha
+        }
+
+        try {
+            cadastrarDados({ url: "auth/login", dados: usuario })
+        } catch (erro) {
+            erro && alert("Não foi possivel fazer o login")
+        }   
+
+
+    }
 
     return (
         <>
             <ImagemContainer>
                 <img src={imagem} alt="Imagem de logo   " />
             </ImagemContainer>
-            <FormularioLogin>
+            <FormularioLogin onSubmit={handleLogin}>
                 <TituloLogin conteudo="Faça login em sua conta" />
                 <CampoDigitacao
                     label="Email"
@@ -42,7 +66,7 @@ function Login() {
                     placeholder="Insira sua senha"
                     onChange={setSenha}
                 />
-                <BotaoLogin conteudo="Entrar"/>
+                <BotaoLogin conteudo="Entrar" />
                 <LinkA>
                     Esqueceu a senha?
                 </LinkA>
