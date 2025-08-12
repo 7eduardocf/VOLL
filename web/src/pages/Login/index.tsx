@@ -7,6 +7,7 @@ import imagem from "./Logo.png"
 import BotaoLogin from "./Button"
 import usePost from "../../usePost"
 import autenticaStore from "../../stores/autentica.store"
+import { Navigate } from "react-router-dom"
 
 interface ILogin {
     email: string,
@@ -40,6 +41,7 @@ function Login() {
         try {
             cadastrarDados({ url: "auth/login", dados: usuario })
             autenticaStore.login({email: email, token: resposta})
+            resposta && <Navigate to="/dashboard"/>
         } catch (erro) {
             erro && alert("Não foi possivel fazer o login")
         }   
