@@ -6,6 +6,7 @@ import styled from "styled-components"
 import imagem from "./Logo.png"
 import BotaoLogin from "./Button"
 import usePost from "../../usePost"
+import autenticaStore from "../../stores/autentica.store"
 
 interface ILogin {
     email: string,
@@ -26,7 +27,7 @@ function Login() {
 
     const [email, setEmail] = useState("")
     const [senha, setSenha] = useState("")
-    const { cadastrarDados, erro, sucesso } = usePost()
+    const { cadastrarDados, erro, sucesso, resposta } = usePost()
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -38,6 +39,7 @@ function Login() {
 
         try {
             cadastrarDados({ url: "auth/login", dados: usuario })
+            autenticaStore.login({email: email, token: resposta})
         } catch (erro) {
             erro && alert("Não foi possivel fazer o login")
         }   
